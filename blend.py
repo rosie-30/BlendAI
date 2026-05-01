@@ -189,7 +189,7 @@ def complete_step():
     )
 
 # =========================================================
-# 9. INTERFAZ
+# 9. INTERFAZ PRINCIPAL
 # =========================================================
 st.title("🚀 BlendAI")
 st.markdown("### Aprende Blender como un videojuego 🎮")
@@ -202,59 +202,86 @@ st.sidebar.title("📊 Perfil")
 st.sidebar.write(f"⭐ XP: {st.session_state.xp}")
 st.sidebar.write(f"🏅 Nivel: {st.session_state.level}")
 
+# PROGRESO
+if st.session_state.mission:
+
+    total_steps = len(MISSIONS[st.session_state.mission])
+
+    progreso = st.session_state.mission_step / total_steps
+
+    st.sidebar.subheader("📈 Progreso de misión")
+
+    st.sidebar.progress(progreso)
+
+    st.sidebar.write(
+        f"{st.session_state.mission_step}/{total_steps} pasos completados"
+    )
+
 st.sidebar.divider()
 
-st.sidebar.title("🗺️ Misiones")
-
-for m in st.session_state.unlocked:
-    st.sidebar.write(f"✔ {m}")
-
 # =========================================================
-# 11. MAPA DE MISIONES
+# 11. MISIONES
 # =========================================================
-st.subheader("🌍 Mapa de aprendizaje")
+st.subheader("🗺️ Misiones")
 
-cols = st.columns(len(st.session_state.unlocked))
+for mission in st.session_state.unlocked:
 
-for i, mission in enumerate(st.session_state.unlocked):
-
-    with cols[i]:
+    with st.container():
 
         st.markdown(
             f"""
             <div class="block">
-                <h3>{mission}</h3>
+                <h3>🎯 {mission}</h3>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-        if st.button(f"Entrar a {mission}"):
+        # BOTÓN DE MISIÓN ABAJO
+        if st.button(f"▶ Entrar a {mission}", use_container_width=True):
 
             msg = start_mission(mission)
 
             st.session_state.messages = [
-                {"role": "assistant", "content": msg}
+                {
+                    "role": "assistant",
+                    "content": msg
+                }
             ]
 
             st.rerun()
 
-# =========================================================
-# 12. CHAT
-# =========================================================
-for msg in st.session_state.messages:
+        st.markdown("<br>", unsafe_allow_html=True)
 
-    avatar = ICONO_IA if msg["role"] == "assistant" else ICONO_USUARIO
+# =========================================================
+# 12. CHAT DE MISIONES
+# =========================================================
+st.divider()
 
-    with st.chat_message(msg["role"], avatar=avatar):
-        st.markdown(msg["content"])
+st.subheader("🎮 Tutor de misión")
+
+chat_container = st.container()
+
+with chat_container:
+
+    for msg in st.session_state.messages:
+
+        avatar = ICONO_IA if msg["role"] == "assistant" else ICONO_USUARIO
+
+        with st.chat_message(msg["role"], avatar=avatar):
+            st.markdown(msg["content"])
 
 # =========================================================
 # 13. BOTÓN SIGUIENTE PASO
 # =========================================================
 if st.session_state.mission:
 
-    if st.button("✅ Completar paso"):
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    if st.button(
+        "✅ Completar paso y continuar",
+        use_container_width=True
+    ):
 
         msg = complete_step()
 
@@ -268,9 +295,19 @@ if st.session_state.mission:
         st.rerun()
 
 # =========================================================
-# 14. CHAT LIBRE
+# 14. CHAT GENERAL IA
 # =========================================================
-if prompt := st.chat_input("Pregúntale algo a BlendAI..."):
+st.divider()
+
+st.subheader("💬 Chat libre con BlendAI")
+
+st.caption(
+    "Pregunta cualquier duda sobre Blender aunque no estés en una misión."
+)
+
+if prompt := st.chat_input(
+    "Ejemplo: ¿Cómo hago una playa realista?"
+):
 
     st.session_state.messages.append(
         {
